@@ -1,5 +1,4 @@
-# JustAnotherCalculator
-work in progress...
+**work in progress...**
 
 A calulator with variable & vector & function support.
 
