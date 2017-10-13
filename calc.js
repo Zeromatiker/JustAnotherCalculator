@@ -301,4 +301,5 @@ Object.keys(calcFuns).forEach( key => c.op[key].prototype.calc =
 
 //---------- Operators end ----------
 
+
 }//script end
