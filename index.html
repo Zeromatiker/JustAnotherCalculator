@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>JustAnotherCalculator</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<style>
+		
+* { padding: 0; margin: 0; }
+
+h2 { text-align: center; background-color: black; color: #fff; }
+
+/* main element common specs */
+#definitionen, #input, #output { display: block; width: 100%; font-size: 1.2em; text-align: center; }
+
+#input { height: 2em; line-height: 2em; border: none }
+
+.greyText { color: #777; }
+
+	</style>
+</head>
+<body>
+
+	<main>
+		
+		<div>
+			<h2>Definitionen</h2>
+			<p id="definitionen"></p>
+		</div>
+
+		<div>
+			<h2>Eingabe</h2>
+			<input type="text" id="input" placeholder="gib hier was ein" autofocus autocomplete="off">
+		</div>
+
+		<div>
+			<h2>Ergebnis</h2>
+			<p id="output"></p>
+		</div>
+
+	</main>
+
+
+	<script src="calc.js"></script>
+	<script>
+
+"use strict"
+
+const inputTimerDuration = 200
+
+let id = x => document.getElementById(x)
+let definitionen = id('definitionen')
+let input = id('input')
+let output = id('output')
+
+let inputTimer
+let historyPos = -1
+let currentInput
+
+let calc = new Calc()
+calc.onDefinitionChange = function(){
+	definitionen.innerHTML = this.definitions.length ? 
+		this.definitions.join('\n') : '<span class="greyText">definierte Variablen werden hier angezeigt</span>'
+}
+calc.init()
+
+function out(x, really=false){
+	let tmp = ''
+	try{
+		tmp = calc.input(x, really)
+	} catch(e) {
+		console.warn(e)
+		tmp = 'Fehler: ' + ({
+			'noInput': 'keine Eingabe',
+			'illegalChar': 'nicht erlaubtes Zeichen',
+			'unknown Operator': 'unbekannter Operator',
+			'bracketFail': 'Klammern falsch gesetzt',
+			'bracketNotClosed': 'Klammer nicht geschlossen',
+			'unsupportedOperation': 'Rechenoperation wird nicht unterstützt: '+e[0]
+		}[e] || e)
+	}
+	if(!really) tmp = '<span class="greyText">'+tmp+'</span>'
+	output.innerHTML = tmp
+}
+
+input.onkeydown = function(e) {
+	// enter
+	if(e.key === 'Enter'){
+		if (inputTimer) clearTimeout(inputTimer)
+		out(this.value, true)
+		this.value = ''
+		historyPos = -1
+		currentInput = ''
+	} else
+	// previous
+	if(e.key === 'ArrowUp'){
+		if(historyPos+1 < calc.history.length) {
+			historyPos++
+			if(historyPos === 0) currentInput = this.value || ''
+			this.value = calc.history[historyPos] || this.value
+			input.oninput()
+		}
+	} else 
+	// next
+	if(e.key === 'ArrowDown'){
+		console.log(historyPos, calc.history)
+		if(historyPos > -1) historyPos--
+		if(historyPos > -1){
+			this.value = calc.history[historyPos]
+		} else {
+			this.value = currentInput || ''
+		}
+		input.oninput()
+	}
+}
+
+input.oninput = function() {
+	clearTimeout(inputTimer)
+	inputTimer = setTimeout( out, inputTimerDuration, this.value)
+}
+
+
+	</script>
+	
+</body>
+</html>
